@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questões de Anatomia da Mama - Residência Médica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .questao {
+            background: white;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s ease;
+        }
+        .questao:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .questao h3 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 1.3em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .questao p strong {
+            color: #333;
+            font-size: 1.1em;
+        }
+        .alternativas {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        .alternativa {
+            margin: 8px 0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
+        }
+        .alternativa:hover {
+            background-color: #f0f4ff;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        .alternativa.selected {
+            font-weight: bold;
+        }
+        .alternativa.correta {
+            background-color: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724;
+        }
+        .alternativa.incorreta {
+            background-color: #f8d7da !important;
+            border-color: #dc3545 !important;
+            color: #721c24;
+        }
+        .alternativa.correta::before {
+            content: "✓ ";
+            font-weight: bold;
+            color: #28a745;
+        }
+        .alternativa.incorreta::before {
+            content: "✗ ";
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .resposta {
+            background-color: #f8f9ff;
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.4s ease;
+        }
+        .resposta.mostrar {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .resposta p:first-child {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .stats {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .stats h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .resultado-final {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            border-left: 5px solid #667eea;
+            min-width: 200px;
+            z-index: 1000;
+        }
+        .resultado-final h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+        }
+        .progresso {
+            color: #666;
+            font-size: 0.9em;
+        }
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header h1 { font-size: 2em; }
+            .questao { padding: 15px; }
+            .resultado-final {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🫀 Anatomia da Mama</h1>
+        <p>20 Questões para Residência Médica</p>
+        <p>Baseado na Aula da Dra. Daniela Setti</p>
+    </div>
+
+    <div class="resultado-final">
+        <h4>📊 Seu Progresso</h4>
+        <div class="progresso">
+            <div id="acertos">Acertos: 0</div>
+            <div id="total">Total: 0/20</div>
+            <div id="percentual">0%</div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <h3>📊 Distribuição das Questões</h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">5</div>
+                <div>Embriologia</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">4</div>
+                <div>Anatomia Estrutural</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">3</div>
+                <div>Músculos Peitorais</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">3</div>
+                <div>Irrigação/Drenagem</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">3</div>
+                <div>Inervação</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">2</div>
+                <div>Drenagem Linfática</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUESTÕES DE EMBRIOLOGIA (5 questões) -->
+
+    <div class="questao" data-questao="1" data-resposta="b">
+        <h3>Questão 1</h3>
+        <p><strong>Em que semana gestacional ocorre a formação da crista mamária na face ventral do embrião?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) 3ª semana</div>
+            <div class="alternativa" data-alternativa="b">b) 5ª semana</div>
+            <div class="alternativa" data-alternativa="c">c) 7ª semana</div>
+            <div class="alternativa" data-alternativa="d">d) 10ª semana</div>
+            <div class="alternativa" data-alternativa="e">e) 12ª semana</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: b</strong></p>
+            <p><strong>Explicação:</strong> Segundo o material, o início da formação mamária se dá na 5ª semana de gestação com a formação da crista mamária na face ventral do embrião. Neste período também ocorre a formação da linha láctea ou faixa galáctea que se desenvolve da axila até a virilha.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="2" data-resposta="c">
+        <h3>Questão 2</h3>
+        <p><strong>Qual estrutura embriológica é responsável pela formação dos ductos e alvéolos mamários?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Mesoderma</div>
+            <div class="alternativa" data-alternativa="b">b) Endoderma</div>
+            <div class="alternativa" data-alternativa="c">c) Ectoderma</div>
+            <div class="alternativa" data-alternativa="d">d) Mesênquima</div>
+            <div class="alternativa" data-alternativa="e">e) Neural</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material especifica que a mama constitui-se por invaginações do ectoderma para formação dos ductos e alvéolos, enquanto o tecido conjuntivo que sustenta a mama vem do mesoderma.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="3" data-resposta="b">
+        <h3>Questão 3</h3>
+        <p><strong>O estágio de canalização do desenvolvimento mamário ocorre em qual período gestacional e é induzido por qual fator?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) 16ª semana - hormônios maternos</div>
+            <div class="alternativa" data-alternativa="b">b) 20ª semana - alteração hormonal vinda da placenta</div>
+            <div class="alternativa" data-alternativa="c">c) 24ª semana - estrogênio fetal</div>
+            <div class="alternativa" data-alternativa="d">d) 32ª semana - progesterona</div>
+            <div class="alternativa" data-alternativa="e">e) 36ª semana - prolactina</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: b</strong></p>
+            <p><strong>Explicação:</strong> O material destaca especificamente que na 20ª semana ocorre alteração hormonal vinda da placenta, iniciando o estágio de canalização que induz a canalização do tecido epitelial ramificado com células epiteliais e mioepiteliais.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="4" data-resposta="d">
+        <h3>Questão 4</h3>
+        <p><strong>Durante qual período gestacional ocorre o estágio vesicular final do desenvolvimento mamário?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) 16ª a 20ª semanas</div>
+            <div class="alternativa" data-alternativa="b">b) 20ª a 24ª semanas</div>
+            <div class="alternativa" data-alternativa="c">c) 24ª a 32ª semanas</div>
+            <div class="alternativa" data-alternativa="d">d) 32ª a 40ª semanas</div>
+            <div class="alternativa" data-alternativa="e">e) 36ª a 42ª semanas</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: d</strong></p>
+            <p><strong>Explicação:</strong> O estágio vesicular final ocorre entre a 32ª e 40ª semanas gestacionais, caracterizado pela formação de lóbulos alveolares e aumento da glândula mamária.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="5" data-resposta="c">
+        <h3>Questão 5</h3>
+        <p><strong>Quantas tiras de epitélio são formadas durante o estágio de ramificação do desenvolvimento mamário?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) 5 a 10</div>
+            <div class="alternativa" data-alternativa="b">b) 10 a 15</div>
+            <div class="alternativa" data-alternativa="c">c) 15 a 25</div>
+            <div class="alternativa" data-alternativa="d">d) 20 a 30</div>
+            <div class="alternativa" data-alternativa="e">e) 25 a 35</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> Segundo o material, durante o estágio de ramificação ocorre a ramificação para formar 15 a 25 tiras de epitélio.</p>
+        </div>
+    </div>
+
+    <!-- QUESTÕES DE ANATOMIA ESTRUTURAL (4 questões) -->
+
+    <div class="questao" data-questao="6" data-resposta="c">
+        <h3>Questão 6</h3>
+        <p><strong>Qual a localização anatômica de referência da mama feminina?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) 2º espaço intercostal</div>
+            <div class="alternativa" data-alternativa="b">b) 3º espaço intercostal</div>
+            <div class="alternativa" data-alternativa="c">c) 4º espaço intercostal</div>
+            <div class="alternativa" data-alternativa="d">d) 5º espaço intercostal</div>
+            <div class="alternativa" data-alternativa="e">e) 6º espaço intercostal</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material especifica que a mama feminina está localizada no 4º espaço intercostal.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="7" data-resposta="b">
+        <h3>Questão 7</h3>
+        <p><strong>Qual das seguintes estruturas é responsável pela produção de leite na mama?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Ductos</div>
+            <div class="alternativa" data-alternativa="b">b) Lobos</div>
+            <div class="alternativa" data-alternativa="c">c) Estroma</div>
+            <div class="alternativa" data-alternativa="d">d) Tecido adiposo</div>
+            <div class="alternativa" data-alternativa="e">e) Tecido conjuntivo</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: b</strong></p>
+            <p><strong>Explicação:</strong> Segundo o material, os lobos são as glândulas produtoras de leite na mama feminina.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="8" data-resposta="c">
+        <h3>Questão 8</h3>
+        <p><strong>Qual a função dos ductos na anatomia mamária?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Produzir leite</div>
+            <div class="alternativa" data-alternativa="b">b) Armazenar leite</div>
+            <div class="alternativa" data-alternativa="c">c) Transportar o leite dos lobos ao mamilo</div>
+            <div class="alternativa" data-alternativa="d">d) Sustentar a mama</div>
+            <div class="alternativa" data-alternativa="e">e) Irrigar a mama</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> Os ductos são descritos no material como pequenos tubos que transportam o leite dos lobos ao mamilo.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="9" data-resposta="c">
+        <h3>Questão 9</h3>
+        <p><strong>O que compõe o estroma mamário?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Apenas tecido adiposo</div>
+            <div class="alternativa" data-alternativa="b">b) Apenas tecido conjuntivo</div>
+            <div class="alternativa" data-alternativa="c">c) Tecido adiposo e tecido conjuntivo</div>
+            <div class="alternativa" data-alternativa="d">d) Ductos e lobos</div>
+            <div class="alternativa" data-alternativa="e">e) Vasos sanguíneos apenas</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material define estroma como tecido adiposo e tecido conjuntivo que envolve os ductos e lobos, vasos sanguíneos e vasos linfáticos.</p>
+        </div>
+    </div>
+
+    <!-- QUESTÕES DE MÚSCULOS PEITORAIS (3 questões) -->
+
+    <div class="questao" data-questao="10" data-resposta="b">
+        <h3>Questão 10</h3>
+        <p><strong>Qual a inserção do músculo peitoral maior?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Processo coracoide da escápula</div>
+            <div class="alternativa" data-alternativa="b">b) Grande tubérculo do úmero</div>
+            <div class="alternativa" data-alternativa="c">c) Pequeno tubérculo do úmero</div>
+            <div class="alternativa" data-alternativa="d">d) Acrômio</div>
+            <div class="alternativa" data-alternativa="e">e) Clavícula</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: b</strong></p>
+            <p><strong>Explicação:</strong> Segundo o material, o músculo peitoral maior tem inserção no grande tubérculo do úmero.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="11" data-resposta="a">
+        <h3>Questão 11</h3>
+        <p><strong>Qual a inervação da porção lateral do músculo peitoral maior?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) C5, C6, C7</div>
+            <div class="alternativa" data-alternativa="b">b) C6, C7, C8</div>
+            <div class="alternativa" data-alternativa="c">c) C7, C8, T1</div>
+            <div class="alternativa" data-alternativa="d">d) C8, T1</div>
+            <div class="alternativa" data-alternativa="e">e) T1, T2</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: a</strong></p>
+            <p><strong>Explicação:</strong> O material especifica que a inervação lateral do músculo peitoral maior é C5, C6, C7, enquanto a medial é C8, T1.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="12" data-resposta="c">
+        <h3>Questão 12</h3>
+        <p><strong>Quais costelas dão origem ao músculo peitoral menor?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) 1ª, 2ª e 3ª costelas</div>
+            <div class="alternativa" data-alternativa="b">b) 2ª, 3ª e 4ª costelas</div>
+            <div class="alternativa" data-alternativa="c">c) 3ª, 4ª e 5ª costelas</div>
+            <div class="alternativa" data-alternativa="d">d) 4ª, 5ª e 6ª costelas</div>
+            <div class="alternativa" data-alternativa="e">e) 5ª, 6ª e 7ª costelas</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material indica que o músculo peitoral menor tem origem na 3ª, 4ª e 5ª costelas, com inserção no processo coracoide da escápula.</p>
+        </div>
+    </div>
+
+    <!-- QUESTÕES DE IRRIGAÇÃO E DRENAGEM VASCULAR (3 questões) -->
+
+    <div class="questao" data-questao="13" data-resposta="c">
+        <h3>Questão 13</h3>
+        <p><strong>Baseado no conteúdo apresentado, qual afirmação é correta sobre a irrigação das mamas?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) É realizada exclusivamente pela artéria mamária interna</div>
+            <div class="alternativa" data-alternativa="b">b) Não há irrigação arterial específica</div>
+            <div class="alternativa" data-alternativa="c">c) O tema foi abordado na aula mas não detalhado no material textual</div>
+            <div class="alternativa" data-alternativa="d">d) É realizada apenas por vasos intercostais</div>
+            <div class="alternativa" data-alternativa="e">e) Origina-se da artéria axilar</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material apresenta slides sobre irrigação das mamas, mas não fornece detalhes textuais específicos sobre as artérias envolvidas, apenas menciona que há formação de vasos mamários durante o desenvolvimento.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="14" data-resposta="c">
+        <h3>Questão 14</h3>
+        <p><strong>Durante qual estágio embriológico ocorre a formação dos vasos mamários?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Estágio de protuberância</div>
+            <div class="alternativa" data-alternativa="b">b) Estágio de disco</div>
+            <div class="alternativa" data-alternativa="c">c) Estágio globular</div>
+            <div class="alternativa" data-alternativa="d">d) Estágio de cone</div>
+            <div class="alternativa" data-alternativa="e">e) Estágio vesicular</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material especifica que durante o estágio globular ocorre o crescimento tridimensional e formação dos tecidos conectivos e vasos mamários.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="15" data-resposta="c">
+        <h3>Questão 15</h3>
+        <p><strong>Qual estrutura está relacionada à drenagem venosa das mamas segundo o conteúdo apresentado?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Sistema venoso superficial apenas</div>
+            <div class="alternativa" data-alternativa="b">b) Sistema venoso profundo apenas</div>
+            <div class="alternativa" data-alternativa="c">c) O tema foi abordado na aula mas não especificado no material textual</div>
+            <div class="alternativa" data-alternativa="d">d) Veia cava superior</div>
+            <div class="alternativa" data-alternativa="e">e) Veia mamária interna apenas</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> Similar à irrigação, a drenagem venosa das mamas foi apresentada como tópico na aula, mas os detalhes específicos não foram fornecidos no material textual disponível.</p>
+        </div>
+    </div>
+
+    <!-- QUESTÕES DE INERVAÇÃO (3 questões) -->
+
+    <div class="questao" data-questao="16" data-resposta="a">
+        <h3>Questão 16</h3>
+        <p><strong>Qual a inervação do nervo torácico longo?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) C5, C6, C7</div>
+            <div class="alternativa" data-alternativa="b">b) C6, C7, C8</div>
+            <div class="alternativa" data-alternativa="c">c) C7, C8</div>
+            <div class="alternativa" data-alternativa="d">d) C8, T1</div>
+            <div class="alternativa" data-alternativa="e">e) T1, T2</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: a</strong></p>
+            <p><strong>Explicação:</strong> Segundo o material, o nervo torácico longo tem inervação C5, C6, C7.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="17" data-resposta="c">
+        <h3>Questão 17</h3>
+        <p><strong>Qual a inervação do nervo toracodorsal?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) C5, C6, C7</div>
+            <div class="alternativa" data-alternativa="b">b) C6, C7</div>
+            <div class="alternativa" data-alternativa="c">c) C7, C8</div>
+            <div class="alternativa" data-alternativa="d">d) C8, T1</div>
+            <div class="alternativa" data-alternativa="e">e) T1, T2</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material especifica que o nervo toracodorsal tem inervação C7, C8.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="18" data-resposta="d">
+        <h3>Questão 18</h3>
+        <p><strong>Qual a inervação do nervo peitoral medial?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) C5, C6</div>
+            <div class="alternativa" data-alternativa="b">b) C6, C7</div>
+            <div class="alternativa" data-alternativa="c">c) C7, C8</div>
+            <div class="alternativa" data-alternativa="d">d) C8, T1</div>
+            <div class="alternativa" data-alternativa="e">e) T1, T2</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: d</strong></p>
+            <p><strong>Explicação:</strong> Segundo o material, o nervo peitoral medial tem inervação C8, T1, assim como a porção medial do músculo peitoral maior.</p>
+        </div>
+    </div>
+
+    <!-- QUESTÕES DE DRENAGEM LINFÁTICA (2 questões) -->
+
+    <div class="questao" data-questao="19" data-resposta="b">
+        <h3>Questão 19</h3>
+        <p><strong>Qual estrutura anatômica é fundamental para a drenagem linfática das mamas?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) Linfonodos cervicais</div>
+            <div class="alternativa" data-alternativa="b">b) Linfonodos axilares</div>
+            <div class="alternativa" data-alternativa="c">c) Linfonodos mediastinais</div>
+            <div class="alternativa" data-alternativa="d">d) Linfonodos inguinais</div>
+            <div class="alternativa" data-alternativa="e">e) Linfonodos supraclaviculares</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: b</strong></p>
+            <p><strong>Explicação:</strong> O material dedica vários slides aos linfonodos axilares, indicando sua importância fundamental na drenagem linfática das mamas.</p>
+        </div>
+    </div>
+
+    <div class="questao" data-questao="20" data-resposta="c">
+        <h3>Questão 20</h3>
+        <p><strong>Considerando o conteúdo apresentado sobre drenagem linfática das mamas, qual afirmação é mais adequada?</strong></p>
+        <div class="alternativas">
+            <div class="alternativa" data-alternativa="a">a) É exclusivamente superficial</div>
+            <div class="alternativa" data-alternativa="b">b) Não tem relevância clínica</div>
+            <div class="alternativa" data-alternativa="c">c) Os linfonodos axilares são estruturas centrais neste sistema</div>
+            <div class="alternativa" data-alternativa="d">d) Ocorre apenas em uma direção</div>
+            <div class="alternativa" data-alternativa="e">e) É independente da anatomia regional</div>
+        </div>
+        <div class="resposta">
+            <p><strong>Resposta correta: c</strong></p>
+            <p><strong>Explicação:</strong> O material enfatiza repetidamente os linfonodos axilares com múltiplos slides dedicados a este tópico, demonstrando sua centralidade no sistema de drenagem linfática mamária.</p>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 50px; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
+        <h2>🎯 Simulado Completo</h2>
+        <p><strong>20 questões baseadas na aula de Anatomia da Mama</strong></p>
+        <p>Dra. Daniela Setti - 5º Semestre</p>
+        <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+            Questões elaboradas seguindo rigorosamente o conteúdo apresentado<br>
+            Clique nas alternativas para responder e ver o resultado!
+        </p>
+    </div>
+
+    <script>
+        let acertos = 0;
+        let totalRespondidas = 0;
+
+        // Adicionar event listeners para todas as alternativas
+        document.querySelectorAll('.alternativa').forEach(alternativa => {
+            alternativa.addEventListener('click', function() {
+                const questao = this.closest('.questao');
+                const respostaCorreta = questao.getAttribute('data-resposta');
+                const alternativaEscolhida = this.getAttribute('data-alternativa');
+                const todasAlternativas = questao.querySelectorAll('.alternativa');
+                const divResposta = questao.querySelector('.resposta');
+
+                // Verificar se a questão já foi respondida
+                if (questao.classList.contains('disabled')) {
+                    return;
+                }
+
+                // Desabilitar todas as alternativas desta questão
+                todasAlternativas.forEach(alt => {
+                    alt.style.pointerEvents = 'none';
+                });
+                questao.classList.add('disabled');
+
+                // Marcar a alternativa correta e incorretas
+                todasAlternativas.forEach(alt => {
+                    const letra = alt.getAttribute('data-alternativa');
+                    if (letra === respostaCorreta) {
+                        alt.classList.add('correta');
+                    } else if (letra === alternativaEscolhida && letra !== respostaCorreta) {
+                        alt.classList.add('incorreta');
+                    }
+                });
+
+                // Verificar se acertou
+                if (alternativaEscolhida === respostaCorreta) {
+                    acertos++;
+                }
+
+                totalRespondidas++;
+
+                // Mostrar resposta
+                setTimeout(() => {
+                    divResposta.classList.add('mostrar');
+                }, 300);
+
+                // Atualizar estatísticas
+                atualizarEstatisticas();
+            });
+        });
+
+        function atualizarEstatisticas() {
+            document.getElementById('acertos').textContent = `Acertos: ${acertos}`;
+            document.getElementById('total').textContent = `Total: ${totalRespondidas}/20`;
+            const percentual = totalRespondidas > 0 ? Math.round((acertos / totalRespondidas) * 100) : 0;
+            document.getElementById('percentual').textContent = `${percentual}%`;
+
+            // Mudar cor baseado na performance
+            const resultadoDiv = document.querySelector('.resultado-final');
+            if (percentual >= 70) {
+                resultadoDiv.style.borderLeftColor = '#28a745';
+            } else if (percentual >= 50) {
+                resultadoDiv.style.borderLeftColor = '#ffc107';
+            } else if (totalRespondidas > 5) {
+                resultadoDiv.style.borderLeftColor = '#dc3545';
+            }
+        }
+    </script>
+
+</body>
+</html>
